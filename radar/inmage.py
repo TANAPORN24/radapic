@@ -146,7 +146,7 @@
 # import matplotlib.pyplot as plt
 
 # # โหลดภาพที่อัปโหลด
-# image_path = "output_blue_yellow.png"  # เปลี่ยนเป็นพาธของภาพที่คุณใช้
+# image_path = "radar/srt240_latest.jpg"  # เปลี่ยนเป็นพาธของภาพที่คุณใช้
 # image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
 
 # # ตรวจสอบว่าภาพโหลดสำเร็จหรือไม่
@@ -195,6 +195,151 @@
 
 # print(f"ดาวน์โหลดภาพที่รวมกันได้ที่: {output_composite_path}")
 #------------------------------------------------ตัวหลัก------------------------------------------------------------
+# import cv2
+# import numpy as np
+# import matplotlib.pyplot as plt
 
+# # โหลดภาพที่อัปโหลด
+# image_path = "radar/srt240_latest.jpg"  # เปลี่ยนเป็นพาธของภาพที่คุณใช้
+# image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
+
+# # ตรวจสอบว่าภาพโหลดสำเร็จหรือไม่
+# if image is None:
+#     raise ValueError("ไม่สามารถโหลดภาพได้ ตรวจสอบพาธไฟล์")
+
+# # แปลงภาพจาก BGR เป็น HSV
+# image_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+# # กำหนดช่วงสีที่ต้องการเก็บไว้โดยใช้ค่าประมาณ
+# color_ranges_hsv = [
+#     ((0, 50, 50), (10, 255, 255)),   # แดง
+#     ((10, 100, 100), (25, 255, 255)), # ส้ม
+#     ((25, 100, 100), (35, 255, 255)), # เหลือง
+#     ((35, 50, 50), (85, 255, 255)),  # เขียว
+#     ((85, 50, 50), (125, 255, 255))  # ฟ้า
+# ]
+
+# # สร้าง mask ว่างสำหรับเก็บผลรวมของ mask
+# mask_total = np.zeros(image_hsv.shape[:2], dtype=np.uint8)
+
+# # วนลูปเพื่อสร้าง mask สำหรับช่วงสีที่ต้องการเก็บไว้
+# for lower, upper in color_ranges_hsv:
+#     lower = np.array(lower, dtype=np.uint8)
+#     upper = np.array(upper, dtype=np.uint8)
+#     mask = cv2.inRange(image_hsv, lower, upper)
+#     mask_total = cv2.bitwise_or(mask_total, mask)
+
+# # ใช้ Mask ในการดึงเฉพาะสีที่ต้องการ
+# filtered_image = cv2.bitwise_and(image, image, mask=mask_total)
+
+# # แสดงภาพที่ผ่านการกรอง
+# plt.figure(figsize=(6, 6))
+# plt.imshow(cv2.cvtColor(filtered_image, cv2.COLOR_BGR2RGB))
+# plt.title("Filtered Image")
+# plt.axis("off")
+# plt.show()
+
+# # บันทึกผลลัพธ์
+# output_filtered_path = "filtered_image.png"
+# cv2.imwrite(output_filtered_path, filtered_image)
+
+# print(f"ดาวน์โหลดภาพที่ผ่านการกรองได้ที่: {output_filtered_path}")
+
+
+#------------------------------------------------------จัดอันดับสีแล้วลบ------------------------------------------------------#
+import cv2
+import numpy as np
+from collections import Counter
+
+# โหลดภาพ
+image_path = "output2.png"  # เปลี่ยนเป็นพาธของคุณ
+image = cv2.imread(image_path)
+
+# แปลงเป็น RGB
+image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+# รีเชพเป็น list ของพิกเซล
+pixels = image_rgb.reshape(-1, 3)
+
+# นับจำนวนพิกเซลแต่ละสี
+color_counts = Counter(map(tuple, pixels))
+
+# ดึงสีที่พบบ่อยที่สุด 5 อันดับ
+most_common_colors = color_counts.most_common(5)
+print("Top 5 colors:", most_common_colors)
+
+# สร้าง mask สำหรับสีที่ต้องการลบ
+mask = np.zeros(image.shape[:2], dtype=np.uint8)
+
+for color, _ in most_common_colors:
+    lower = np.array(color) - 10  # เผื่อช่วงสี
+    upper = np.array(color) + 10
+    mask |= cv2.inRange(image_rgb, lower, upper)
+
+# ลบสีโดยเปลี่ยนเป็นสีขาว
+image_rgb[mask > 0] = [255, 255, 255]
+
+# บันทึกผลลัพธ์
+cv2.imwrite("output3.png", cv2.cvtColor(image_rgb, cv2.COLOR_RGB2BGR))
+
+
+#------------------------------------------------------จัดอันดับสีแล้วลบ------------------------------------------------------#
+
+
+# import cv2
+# import numpy as np
+# import matplotlib.pyplot as plt
+
+# # โหลดภาพที่อัปโหลด
+# image_path = "radar/srt240_latest.jpg"  # เปลี่ยนเป็นพาธของภาพที่คุณใช้
+# image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
+
+# # ตรวจสอบว่าภาพโหลดสำเร็จหรือไม่
+# if image is None:
+#     raise ValueError("ไม่สามารถโหลดภาพได้ ตรวจสอบพาธไฟล์")
+
+# # ฟังก์ชันสำหรับการกรองสี
+# def filter_colors(image):
+#     # แปลงภาพจาก BGR เป็น HSV
+#     image_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+#     # กำหนดช่วงสีที่ต้องการเก็บไว้โดยใช้ค่าประมาณ
+#     color_ranges_hsv = [
+#         ((0, 50, 50), (10, 255, 255)),   # แดง
+#         ((10, 100, 100), (25, 255, 255)), # ส้ม
+#         ((25, 100, 100), (35, 255, 255)), # เหลือง
+#         ((35, 50, 50), (85, 255, 255)),  # เขียว
+#         ((85, 50, 50), (125, 255, 255))  # ฟ้า
+#     ]
+
+#     # สร้าง mask ว่างสำหรับเก็บผลรวมของ mask
+#     mask_total = np.zeros(image_hsv.shape[:2], dtype=np.uint8)
+
+#     # วนลูปเพื่อสร้าง mask สำหรับช่วงสีที่ต้องการเก็บไว้
+#     for lower, upper in color_ranges_hsv:
+#         lower = np.array(lower, dtype=np.uint8)
+#         upper = np.array(upper, dtype=np.uint8)
+#         mask = cv2.inRange(image_hsv, lower, upper)
+#         mask_total = cv2.bitwise_or(mask_total, mask)
+
+#     # ใช้ Mask ในการดึงเฉพาะสีที่ต้องการ
+#     return cv2.bitwise_and(image, image, mask=mask_total)
+
+# # รันกระบวนการกรองสีสองครั้ง
+# filtered_image = filter_colors(image)
+# filtered_image = filter_colors(filtered_image)
+
+# # แสดงภาพที่ผ่านการกรอง
+# plt.figure(figsize=(6, 6))
+# plt.imshow(cv2.cvtColor(filtered_image, cv2.COLOR_BGR2RGB))
+# plt.title("Filtered Image")
+# plt.axis("off")
+# plt.show()
+
+# # บันทึกผลลัพธ์
+# output_filtered_path = "filtered_image.png"
+# cv2.imwrite(output_filtered_path, filtered_image)
+
+# print(f"ดาวน์โหลดภาพที่ผ่านการกรองได้ที่: {output_filtered_path}")
 
 
