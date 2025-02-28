@@ -194,6 +194,7 @@
 # cv2.imwrite(output_composite_path, composite_image)
 
 # print(f"ดาวน์โหลดภาพที่รวมกันได้ที่: {output_composite_path}")
+
 #------------------------------------------------ตัวหลัก------------------------------------------------------------
 # import cv2
 # import numpy as np
@@ -245,101 +246,45 @@
 
 # print(f"ดาวน์โหลดภาพที่ผ่านการกรองได้ที่: {output_filtered_path}")
 
+#------------------------------------------------ตัวหลัก------------------------------------------------------------
 
-#------------------------------------------------------จัดอันดับสีแล้วลบ------------------------------------------------------#
-import cv2
+#------------------------------------------------ตัวที่คิดว่าได้------------------------------------------------------------
+
+from PIL import Image
 import numpy as np
-from collections import Counter
 
-# โหลดภาพ
-image_path = "output2.png"  # เปลี่ยนเป็นพาธของคุณ
-image = cv2.imread(image_path)
+# Load the color reference image
+color_ref_path = "radar/colors.png"  # เปลี่ยนเป็นพาธของภาพที่ใช้ดึงสี
+color_ref_image = Image.open(color_ref_path)
 
-# แปลงเป็น RGB
-image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+# Convert color reference image to numpy array
+color_ref_array = np.array(color_ref_image)
 
-# รีเชพเป็น list ของพิกเซล
-pixels = image_rgb.reshape(-1, 3)
+# Get unique colors (storm intensity colors)
+storm_colors = np.unique(color_ref_array.reshape(-1, color_ref_array.shape[2]), axis=0)
+storm_colors = [tuple(color) for color in storm_colors]  # Convert to list of tuples
 
-# นับจำนวนพิกเซลแต่ละสี
-color_counts = Counter(map(tuple, pixels))
+# Load the radar image
+radar_image_path = "radar/skn240_HQ_latest.png"  # เปลี่ยนเป็นพาธของภาพเรดาร์
+radar_image = Image.open(radar_image_path)
 
-# ดึงสีที่พบบ่อยที่สุด 5 อันดับ
-most_common_colors = color_counts.most_common(5)
-print("Top 5 colors:", most_common_colors)
+# Convert radar image to numpy array
+radar_array = np.array(radar_image)
 
-# สร้าง mask สำหรับสีที่ต้องการลบ
-mask = np.zeros(image.shape[:2], dtype=np.uint8)
+# Extract only the colors matching "storm intensity" colors
+mask = np.isin(radar_array.reshape(-1, radar_array.shape[2]), storm_colors).all(axis=1)
+filtered_array = np.zeros_like(radar_array)
+filtered_array.reshape(-1, radar_array.shape[2])[mask] = radar_array.reshape(-1, radar_array.shape[2])[mask]
 
-for color, _ in most_common_colors:
-    lower = np.array(color) - 10  # เผื่อช่วงสี
-    upper = np.array(color) + 10
-    mask |= cv2.inRange(image_rgb, lower, upper)
+# Convert back to image
+filtered_image = Image.fromarray(filtered_array)
 
-# ลบสีโดยเปลี่ยนเป็นสีขาว
-image_rgb[mask > 0] = [255, 255, 255]
+# Save the result
+filtered_image_path = "filtered_radar.png"  # เปลี่ยนพาธตามต้องการ
+filtered_image.save(filtered_image_path)
 
-# บันทึกผลลัพธ์
-cv2.imwrite("output3.png", cv2.cvtColor(image_rgb, cv2.COLOR_RGB2BGR))
+# Show the processed image
+filtered_image.show()
 
-
-#------------------------------------------------------จัดอันดับสีแล้วลบ------------------------------------------------------#
-
-
-# import cv2
-# import numpy as np
-# import matplotlib.pyplot as plt
-
-# # โหลดภาพที่อัปโหลด
-# image_path = "radar/srt240_latest.jpg"  # เปลี่ยนเป็นพาธของภาพที่คุณใช้
-# image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
-
-# # ตรวจสอบว่าภาพโหลดสำเร็จหรือไม่
-# if image is None:
-#     raise ValueError("ไม่สามารถโหลดภาพได้ ตรวจสอบพาธไฟล์")
-
-# # ฟังก์ชันสำหรับการกรองสี
-# def filter_colors(image):
-#     # แปลงภาพจาก BGR เป็น HSV
-#     image_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-
-#     # กำหนดช่วงสีที่ต้องการเก็บไว้โดยใช้ค่าประมาณ
-#     color_ranges_hsv = [
-#         ((0, 50, 50), (10, 255, 255)),   # แดง
-#         ((10, 100, 100), (25, 255, 255)), # ส้ม
-#         ((25, 100, 100), (35, 255, 255)), # เหลือง
-#         ((35, 50, 50), (85, 255, 255)),  # เขียว
-#         ((85, 50, 50), (125, 255, 255))  # ฟ้า
-#     ]
-
-#     # สร้าง mask ว่างสำหรับเก็บผลรวมของ mask
-#     mask_total = np.zeros(image_hsv.shape[:2], dtype=np.uint8)
-
-#     # วนลูปเพื่อสร้าง mask สำหรับช่วงสีที่ต้องการเก็บไว้
-#     for lower, upper in color_ranges_hsv:
-#         lower = np.array(lower, dtype=np.uint8)
-#         upper = np.array(upper, dtype=np.uint8)
-#         mask = cv2.inRange(image_hsv, lower, upper)
-#         mask_total = cv2.bitwise_or(mask_total, mask)
-
-#     # ใช้ Mask ในการดึงเฉพาะสีที่ต้องการ
-#     return cv2.bitwise_and(image, image, mask=mask_total)
-
-# # รันกระบวนการกรองสีสองครั้ง
-# filtered_image = filter_colors(image)
-# filtered_image = filter_colors(filtered_image)
-
-# # แสดงภาพที่ผ่านการกรอง
-# plt.figure(figsize=(6, 6))
-# plt.imshow(cv2.cvtColor(filtered_image, cv2.COLOR_BGR2RGB))
-# plt.title("Filtered Image")
-# plt.axis("off")
-# plt.show()
-
-# # บันทึกผลลัพธ์
-# output_filtered_path = "filtered_image.png"
-# cv2.imwrite(output_filtered_path, filtered_image)
-
-# print(f"ดาวน์โหลดภาพที่ผ่านการกรองได้ที่: {output_filtered_path}")
-
-
+ 
+#---------------------------------------------------------------------------------------------------------------------------#
