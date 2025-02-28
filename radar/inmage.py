@@ -280,11 +280,10 @@ filtered_array.reshape(-1, radar_array.shape[2])[mask] = radar_array.reshape(-1,
 filtered_image = Image.fromarray(filtered_array)
 
 # Save the result
-filtered_image_path = "filtered_radar.png"  # เปลี่ยนพาธตามต้องการ
+filtered_image_path = "filtered_radar1.png"  # เปลี่ยนพาธตามต้องการ
 filtered_image.save(filtered_image_path)
 
 # Show the processed image
 filtered_image.show()
 
- 
 #---------------------------------------------------------------------------------------------------------------------------#
