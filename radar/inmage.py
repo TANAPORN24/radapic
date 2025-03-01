@@ -337,7 +337,7 @@ from PIL import Image
 import numpy as np
 
 # Load the radar image
-image_path = "skn240_HQ_latest (1).gif"  # พาธไฟล์เรดาห์ใช้ GIF โหลดได้จาก https://weather.tmd.go.th/skn240_HQ_edit2.php
+image_path = "skn240_HQ_latest (1).gif"  ###พาธไฟล์เรดาห์ใช้ GIF โหลดได้จาก https://weather.tmd.go.th/skn240_HQ_edit2.php###
 image = Image.open(image_path).convert("RGBA")
 
 # Convert image to numpy array
@@ -357,6 +357,31 @@ image_data[~mask] = [0, 0, 0, 0]  # Make non-rain areas transparent
 rain_image = Image.fromarray(image_data)
 
 # Save the processed image
-rain_image.save("outputRada1.png")  # เปลี่ยนชื่อไฟล์ตามต้องการ
+rain_only_refined_path = "rain_only_refined.png"
+rain_image.save(rain_only_refined_path)
+
+# Define the crop box (left, upper, right, lower)
+crop_width = 1745
+crop_height = 1585
+
+# Get the original image size
+orig_width, orig_height = rain_image.size
+
+# Define the cropping area (aligned to the top-right)
+left = orig_width - crop_width  # Align to right
+upper = 0  # Align to top
+right = orig_width
+lower = crop_height
+
+# Crop the image
+cropped_rain_image = rain_image.crop((left, upper, right, lower))
+
+# Save the cropped image
+cropped_rain_image_path = "rain_only_cropped_fixed.png"
+cropped_rain_image.save(cropped_rain_image_path)
+
+print(f"Saved refined image: {rain_only_refined_path}")
+print(f"Saved cropped image: {cropped_rain_image_path}")
+
 
 #----------------------------------------------------------------------------------------------------------------------------------#
