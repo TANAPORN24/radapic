@@ -267,7 +267,7 @@
 # storm_colors = [tuple(color) for color in storm_colors]  # Convert to list of tuples
 
 # # Load the radar image
-# radar_image_path = "Screenshot 2025-02-28 152212.jpg"  # เปลี่ยนเป็นพาธของภาพเรดาร์
+# radar_image_path = "radar28.png"  # เปลี่ยนเป็นพาธของภาพเรดาร์
 # radar_image = Image.open(radar_image_path)
 
 # # Convert radar image to numpy array
@@ -280,7 +280,7 @@
 
 # # Convert back to image
 # filtered_image = Image.fromarray(filtered_array)
-
+ 
 # # Save the result
 # filtered_image_path = "16.png"  # เปลี่ยนพาธตามต้องการ
 # filtered_image.save(filtered_image_path)
@@ -292,40 +292,71 @@
 
 # #--------------------------------------------------ใช้งานลองดู-------------------------------------------------------------------#
 
+# from PIL import Image
+# import numpy as np
+# import cv2
+
+# # Load the radar image
+# radar_image_path = "radar/Screenshot 2025-02-28 160637.jpg"  # เปลี่ยนเป็นพาธของภาพเรดาร์
+# radar_image = Image.open(radar_image_path).convert("RGBA")
+# radar_array = np.array(radar_image)
+
+# # Load the color reference image
+# color_ref_path = "radar/colors.png"  # เปลี่ยนเป็นพาธของภาพแถบสี
+# color_ref_image = Image.open(color_ref_path).convert("RGB")
+# color_ref_array = np.array(color_ref_image)
+
+# # Extract unique colors from the reference image
+# unique_colors = np.unique(color_ref_array.reshape(-1, color_ref_array.shape[2]), axis=0)
+# storm_colors = [tuple(color) for color in unique_colors]  # Convert to list of tuples
+
+# # Create a mask to keep only storm colors
+# mask = np.isin(radar_array[:, :, :3].reshape(-1, 3), storm_colors).all(axis=1)
+
+# # Create an output array with full transparency
+# filtered_array = np.zeros_like(radar_array)
+# filtered_array[:, :, 3] = 0  # Set all alpha to transparent
+
+# # Apply the mask: Keep only storm colors, set others to transparent
+# filtered_array.reshape(-1, 4)[mask] = radar_array.reshape(-1, 4)[mask]
+
+# # Convert back to image
+# filtered_image = Image.fromarray(filtered_array, "RGBA")
+
+# # Save the result
+# filtered_image_path = "19.png"  # เปลี่ยนพาธตามต้องการ
+# filtered_image.save(filtered_image_path)
+
+# # Show the processed image
+# filtered_image.show()
+
+# #---------------------------------------------------------------------------------------------------------------------------#
+
+#-----------------------------------------------ใช้ได้แล้ววววววววววววววววววววววววววววว เหลือน้ำ-----------------------------------------------#
 from PIL import Image
 import numpy as np
-import cv2
 
 # Load the radar image
-radar_image_path = "radar/Screenshot 2025-02-28 160637.jpg"  # เปลี่ยนเป็นพาธของภาพเรดาร์
-radar_image = Image.open(radar_image_path).convert("RGBA")
-radar_array = np.array(radar_image)
+image_path = "skn240_HQ_latest (1).gif"  # พาธไฟล์เรดาห์ใช้ GIF โหลดได้จาก https://weather.tmd.go.th/skn240_HQ_edit2.php
+image = Image.open(image_path).convert("RGBA")
 
-# Load the color reference image
-color_ref_path = "radar/colors.png"  # เปลี่ยนเป็นพาธของภาพแถบสี
-color_ref_image = Image.open(color_ref_path).convert("RGB")
-color_ref_array = np.array(color_ref_image)
+# Convert image to numpy array
+image_data = np.array(image)
 
-# Extract unique colors from the reference image
-unique_colors = np.unique(color_ref_array.reshape(-1, color_ref_array.shape[2]), axis=0)
-storm_colors = [tuple(color) for color in unique_colors]  # Convert to list of tuples
+# Define a mask to preserve only the radar data (excluding the map background but keeping the scale)
+def is_rain_data(pixel):
+    r, g, b, a = pixel
+    # Keeping only non-background colors (excluding terrain colors)
+    return not (40 < r < 180 and 60 < g < 200 and 40 < b < 180)  # กรองสีที่เป็นพื้นหลัง
 
-# Create a mask to keep only storm colors
-mask = np.isin(radar_array[:, :, :3].reshape(-1, 3), storm_colors).all(axis=1)
+# Apply new mask to remove background but keep radar scale
+mask = np.apply_along_axis(is_rain_data, -1, image_data)
+image_data[~mask] = [0, 0, 0, 0]  # Make non-rain areas transparent
 
-# Create an output array with full transparency
-filtered_array = np.zeros_like(radar_array)
-filtered_array[:, :, 3] = 0  # Set all alpha to transparent
+# Create new refined image
+rain_image = Image.fromarray(image_data)
 
-# Apply the mask: Keep only storm colors, set others to transparent
-filtered_array.reshape(-1, 4)[mask] = radar_array.reshape(-1, 4)[mask]
+# Save the processed image
+rain_image.save("outputRada1.png")  # เปลี่ยนชื่อไฟล์ตามต้องการ
 
-# Convert back to image
-filtered_image = Image.fromarray(filtered_array, "RGBA")
-
-# Save the result
-filtered_image_path = "19.png"  # เปลี่ยนพาธตามต้องการ
-filtered_image.save(filtered_image_path)
-
-# Show the processed image
-filtered_image.show()
+#----------------------------------------------------------------------------------------------------------------------------------#
