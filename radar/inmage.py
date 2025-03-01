@@ -336,8 +336,8 @@
 from PIL import Image
 import numpy as np
 
-# Load the radar image
-image_path = "skn240_HQ_latest (1).gif"  ###พาธไฟล์เรดาห์ใช้ GIF โหลดได้จาก https://weather.tmd.go.th/skn240_HQ_edit2.php###
+# Load the radar image (GIF format)
+image_path = "skn240_HQ_latest (2).gif"  # เปลี่ยนเป็นพาธไฟล์ที่ดาวน์โหลดจาก https://weather.tmd.go.th/skn240_HQ_edit2.php
 image = Image.open(image_path).convert("RGBA")
 
 # Convert image to numpy array
@@ -382,6 +382,39 @@ cropped_rain_image.save(cropped_rain_image_path)
 
 print(f"Saved refined image: {rain_only_refined_path}")
 print(f"Saved cropped image: {cropped_rain_image_path}")
+
+# ---------------------------------------------
+# Apply Circular Crop
+
+# Load the cropped rain image
+cropped_rain_image = Image.open(cropped_rain_image_path).convert("RGBA")
+
+# Get image size and define the center and radius
+width, height = cropped_rain_image.size
+center_x, center_y = width // 2, height // 2
+radius = 792
+
+# Create a circular mask
+mask = Image.new("L", (width, height), 0)
+mask_data = np.array(mask)
+
+# Generate circular region
+y, x = np.ogrid[:height, :width]
+mask_area = (x - center_x) ** 2 + (y - center_y) ** 2 <= radius ** 2
+
+# Apply mask
+mask_data[mask_area] = 255
+circular_mask = Image.fromarray(mask_data, mode="L")
+
+# Apply circular mask to the cropped image
+circular_rain_image = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+circular_rain_image.paste(cropped_rain_image, (0, 0), circular_mask)
+
+# Save the circular cropped image
+circular_rain_image_path = "circular.png"
+circular_rain_image.save(circular_rain_image_path)
+
+print("Saved circular cropped image: circular.png")
 
 
 #----------------------------------------------------------------------------------------------------------------------------------#
