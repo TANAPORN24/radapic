@@ -1,6 +1,23 @@
-import os
-from PIL import Image
-import numpy as np
+************ request ************
+***ติดตั้งไลบารีที่ใช้
+
+pip install pillow numpy  
+
+; Pillow ใช้สำหรับจัดการกับรูปภาพ (เปิด, แปลง, ตัด, บันทึก ฯลฯ)
+; numpy ใช้สำหรับจัดการกับข้อมูลภาพในรูปแบบอาเรย์ เพื่อทำการกรองสีและสร้างมาสก์
+
+***มีโฟเดอร์  
+Radarimage   ; เอาไว้เก็บกระบวนการทั้งหมด ซึ่งประกอบไปด้วย  script.py , input , output
+script.py  ;ไว้รัน code 
+input ;ใช้เก็บภาพ GIF ที่โหลดมา
+output ;ใช้เก็บผลลัพธ์
+
+
+****** code ******
+
+import os   # ใช้จัดการไฟล์และโฟลเดอร์
+from PIL import Image    # ใช้เปิด, แก้ไข, และบันทึกภาพ
+import numpy as np   # ใช้จัดการอาเรย์ของพิกเซลภาพ
 
 # Input file path
 input_path = "input/skn240_HQ_latest (1).gif"  # เปลี่ยนเป็นไฟล์ที่ต้องการใช้
