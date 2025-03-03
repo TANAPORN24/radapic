@@ -3,7 +3,7 @@ from PIL import Image
 import numpy as np
 
 # Input file path
-input_path = "input/skn240_HQ_latest (1).gif"  # เปลี่ยนเป็นไฟล์ที่ต้องการใช้
+input_path = "input/skn240_HQ_latest.gif"  # เปลี่ยนเป็นไฟล์ที่ต้องการใช้
 
 # Extract file name without extension
 file_name = os.path.basename(input_path)  # เช่น "skn240_HQ_latest (2).gif"
