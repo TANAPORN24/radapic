@@ -1,3 +1,3 @@
 @echo off
 cd /d C:\Users\Ubonmet\Documents\GitHub\radapic\radar
-python script.py
+python script4.py
