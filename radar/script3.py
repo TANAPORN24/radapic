@@ -114,12 +114,21 @@ if gif_url:
     circular_rain_image = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     circular_rain_image.paste(cropped_image, (0, 0), circular_mask)
 
-    # บันทึกภาพที่ได้
-    output_filename = f"skn240_HQ_latest ({next_index}).png"
-    output_path = os.path.join(output_folder, output_filename)
-    circular_rain_image.save(output_path)
+    # === STEP 3: อัปโหลดภาพที่ประมวลผลแล้วไปยังเซิร์ฟเวอร์ PHP ===
 
-    print(f"✅ บันทึกภาพเรดาร์ที่ประมวลผลแล้วที่: {output_path}")
+# URL ของ PHP script ที่ใช้รับไฟล์
+upload_url = "http://yourserver.com/upload.php"  # เปลี่ยนเป็น URL ของเซิร์ฟเวอร์คุณ
 
-else:
-    print("❌ ไม่พบไฟล์ GIF ในหน้าเว็บ")
+# เปิดไฟล์ที่ต้องการอัปโหลด
+with open(output_path, "rb") as file:
+    files = {"file": file}
+    
+    # ส่งคำขอ POST ไปยัง PHP script
+    response = requests.post(upload_url, files=files)
+    
+    # ตรวจสอบผลลัพธ์จากการอัปโหลด
+    if response.status_code == 200:
+        print(f"✅ อัปโหลดไฟล์สำเร็จ: {response.json()}")
+    else:
+        print(f"❌ การอัปโหลดล้มเหลว: {response.status_code}")
+
